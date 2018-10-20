@@ -1,0 +1,101 @@
+#include <iostream>
+using namespace std;
+
+int main() 
+{
+  //Initializing the board
+  char board[6][6];
+  char x = 'x'; //corresponds with player 1
+  char o = 'o'; //corresponds with player 2
+  char space = ' ';
+  int numcounter[6];
+  char alphcounter[6];
+  char row;
+  int column;
+  //Initialized like this so that Player 1 always starts first
+  bool player1 = true;
+  //bool player2 = false;
+  //bool checking;
+  //The code below sets the board to a space
+  for (int i = 0; i<6; i++)
+  {
+    for (int j = 0; j<6; j++)
+    {
+      board[i][j] = space;
+    }
+  }
+  //The code below sets the values for row, column and the initial spots of x's and o's
+  int counter = 1;
+  for (int i = 0; i<6; i++)
+  {
+    numcounter[i] = counter;
+    counter++;
+  }
+  counter = 65;
+  for (int i = 0; i<6; i++)
+  {
+    alphcounter[i] = counter;
+    counter++;
+  }
+  
+  
+  board[2][2] = o;
+  board[3][2] = x;
+  board[2][3] = x;
+  board[3][3] = o;
+  //The below section displays the board
+  for (int i = 0; i < 6; i++) 
+  { 
+    cout << "-------------\n"; 
+    for (int j = 0; j < 6; j++) 
+    { 
+      cout << "|" << board[i][j];
+    } 
+    cout << "|"<<alphcounter[i]<<"\n"; 
+  }
+  cout << "-------------\n";
+
+  for (int i = 0; i<6; i++)
+  {
+    cout << " "<<numcounter[i];
+  }
+  
+  //This next bit of code asks Player 1 to make their move and checks to see if the move is valid. If the move isn't valid, the user is asked to try again
+  cout <<"\nPlayer One - Enter the row you want to place your disk in:\n";
+  cin >> row;
+  while (65 > row || row> 70)
+  {
+    cout << "This row does not exist. Please enter an alphabet from the range of A-F.\n";
+    cin >> row;
+  }
+  cout <<"\nPlayer One - Enter the column you want to place your disk in:\n";
+  cin >> column;
+  while (0 >= column || column> 6)
+  {
+    cout << "This column does not exist. Please enter a value from numbers 1-6.\n";
+    cin >> column;
+  }
+  //This code checks to see if the board cell is occupied. if so - the person is asked to reenter their values.START FROM HERE NEXT TIME
+  while (board[][] == x || board[][]==o)
+  {
+    cout << "This space is already occupied. Please choose another cell to place your disk. Enter your row:"<<endl;
+    cin >> row;
+    cout << "\nPlease enter your column:"<<endl;
+    cin >> column;
+  }
+  cout << "row:"<<row<<" column:"<<column;
+  
+  //This next bit of code checks to see if the move is valid as per the rules of the game. It checks the cells surrounding the desired move to see if the move will result in the opponent's disk being flipped. If not, the person is asked to try again.
+
+
+  return 0;
+}
+
+
+/*
+Things to do after finishing coding:
+1. run through the code and compartmentalize into functions where possible
+2. merge some sections where possible
+
+
+*/
