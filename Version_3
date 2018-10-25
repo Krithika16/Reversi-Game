@@ -1,0 +1,243 @@
+#include <iostream>
+#include <tuple>
+using namespace std;
+
+//This function asks the user to input a row value and returns it. Also error checks to see if the row value is within bounds
+char getRow()
+{
+  char r;
+  cout <<"\nPlayer One - Enter the row you want to place your disk in:\n";
+  cin >> r;
+
+  while (65 > r || r> 70)
+  {
+    cout << "This row does not exist. Please enter an alphabet from the range of A-F.\n";
+    cin >> r;
+  }
+  return r;
+}
+
+//This function asks the user to input a column value and returns it. Also error checks to see if the value is within bounds
+int getColumn()
+{
+  int c;
+  cout <<"\nPlayer One - Enter the column you want to place your disk in:\n";
+  cin >> c;
+
+  while (0 >= c || c> 6)
+  {
+    cout << "This column does not exist. Please enter a value from numbers 1-6.\n";
+    cin >> c;
+  }
+  return c;
+}
+//This function initializes the board
+void initializeBoard(char b[6][6], char s, char o, char x, char a[6], int n[6] , int c)
+{
+  for (int i = 0; i<6; i++)
+  {
+    for (int j = 0; j<6; j++)
+    {
+      b[i][j] = s;
+    }
+  }
+  b[2][2] = o;
+  b[3][2] = x;
+  b[2][3] = x;
+  b[3][3] = o;
+
+  //The code below sets the values for row, column and the initial spots of x's and o's
+  for (int i = 0; i<6; i++)
+  {
+    n[i] = c;
+    c++;
+  }
+
+  c = 65;
+
+  for (int i = 0; i<6; i++)
+  {
+    a[i] = c;
+    c++;
+  }
+  return;
+}
+
+//This function displays the playing board
+void dispBoard(char b[6][6], char a[6], int n[6])
+{
+  for (int i = 0; i < 6; i++) 
+  { 
+    cout << "-------------\n"; 
+
+    for (int j = 0; j < 6; j++) 
+    { 
+      cout << "|" << b[i][j];
+    } 
+
+    cout << "|"<< a[i] <<"\n"; 
+  }
+
+  cout << "-------------\n";
+
+  for (int i = 0; i<6; i++)
+  {
+    cout << " " << n[i];
+  }
+
+}
+//This function checks to see if there are any empty spaces left on the board
+bool boardEmpty(char b[6][6], char s)
+{
+  int counter = 0;
+  for (int i = 0; i<6; i++)
+  {
+    for (int j = 0; j<6; j++)
+    {
+      if (b[i][j] == s)
+      {
+        counter++;
+      }
+    }
+  }
+
+  if (counter > 0)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+//Checks to see who won
+void whoWon (char b[6][6], char x, int po, char o, int pt)
+{
+  for(int i = 0;i<6;i++)
+  {
+    for (int j = 0; j<6; j++)
+    {
+      if(b[i][j]==x)
+      {
+        po++;
+      }
+      else if (b[i][j]==o)
+      {
+        pt++;
+      }
+    }
+  }
+  if (po>pt)
+  {
+    cout << "\nPlayer 1 is the winner!!";
+  }
+  else if (po < pt)
+  {
+    cout << "\nPlayer 2 is the winner!!";
+  }
+  else
+  {
+    cout << "\nThis game ended in a tie!";
+  }
+  cout << "\nPlayer 1 score:" << po<< endl;
+  cout<< "Player 2 score:" << pt << endl;
+}
+
+tuple<char, int> isOccupied(char b[6][6], char x, char o, char r, int c)
+{
+  while (b[int(r)-65][c-1] == x || b[int(r)-65][c-1]==o)
+    {
+      cout << "Error - that cell is already occupied. Try again!"<<endl;
+      r = getRow();
+      c = getColumn();
+    }
+  return  make_tuple(r, c);
+}
+
+int main() 
+{
+  //Initializing the board
+  char board[6][6];
+  char x = 'x'; //corresponds with player 1
+  char o = 'o'; //corresponds with player 2
+  char space = ' ';
+  int numcounter[6];
+  char alphcounter[6];
+  char row;
+  int column;
+  bool isEmpty = false;
+  int counter = 1;
+  //Initialized like this so that Player 1 always starts first
+  bool player1 = true;
+  int playOne = 0;
+  int playTwo = 0;
+  int nearOpp = 0;
+  
+  //This function initializes the board
+  initializeBoard(board, space, o, x, alphcounter, numcounter, counter);
+
+  //The function displays the board
+  dispBoard(board, alphcounter, numcounter);
+  
+  //This bit of code checks for if the board is empty or not.
+  isEmpty = boardEmpty(board, space);
+  
+  while (isEmpty)
+  {
+    //This next bit of code asks Player 1 to make their move and checks to see if the move is valid. If the move isn't valid, the user is asked to try again
+    row = getRow();
+    column = getColumn();
+    
+    //This code checks to see if the board cell is occupied. if so - the person is asked to reenter their values.
+    tie (row, column) = isOccupied(board, x, o, row, column);
+
+    //if (board[int(row)-66][column-2]==space||board[int(row)-66][column-2]==x) -MAYBE CAN TRY USING FOR LOOPS ;-) A NESTED FOR LOOP POSSIBLY TO RUN THROUGH ALL THE SCENARIOS FOR EACH CHANGE IN ROW AND COLUMN. IF i and j ARE BOTH EQUAL TO 0 - THE DESIRED CELL - SKIP!!!
+    nearOpp=0;
+    for (int i = -1; i<2;i++)
+    {
+      for (int j = -1;j<2;j++)
+      {
+        if (i==0 && j==0)
+        {
+          continue;
+        }
+        if(player1)
+        {
+          if (board[int(row)-65+i][column-1+j]==space||board[int(row)-65+i][column-1+j]==x)
+          {
+            continue;
+          }
+          else if(board[int(row)-65+i][column-1+j]==o)
+          {
+            nearOpp++;
+          }
+        }
+      }
+    }
+
+    //This next bit of code checks to see if the move is valid as per the rules of the game. It checks the cells surrounding the desired move to see if the move will result in the opponent's disk being flipped. If not, the person is asked to try again.
+
+    //Case 1 - upper left to the desired cell
+    
+    //switches between the players
+    if (player1 == true)
+    {
+      board[int(row)-65][column-1] = x;
+    }
+    else 
+    {
+      board[int(row)-65][column-1] = o;
+    }
+
+    dispBoard(board, alphcounter, numcounter);
+
+    //This bit of code checks for if the board is empty or not.
+    isEmpty = boardEmpty(board, space);
+    player1 = !player1;
+  }
+
+  //This code checks to see who won and displays it on the screen
+  whoWon(board, x, playOne, o, playTwo);
+  return 0;
+}
+
