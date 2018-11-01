@@ -1,0 +1,829 @@
+#include <iostream>
+#include <tuple>
+using namespace std;
+
+//This function asks the user to input a row value and returns it. Also error checks to see if the row value is within bounds
+char getRow(bool po)
+{
+  char r;
+  if (po)
+  {
+    cout <<"\nPlayer One - Enter the row you want to place your disk in:\n";
+    cin >> r;
+  }
+  else
+  {
+    cout <<"\nPlayer Two - Enter the row you want to place your disk in:\n";
+    cin >> r;
+  }
+  while (65 > r || r> 70)
+  {
+    cout << "This row does not exist. Please enter an alphabet from the range of A-F.\n";
+    cin >> r;
+  }
+  return r;
+}
+
+//This function asks the user to input a column value and returns it. Also error checks to see if the value is within bounds
+int getColumn(bool po)
+{
+  int c;
+  if (po)
+  {
+    cout <<"\nPlayer One - Enter the column you want to place your disk in:\n";
+    cin >> c;
+  }
+  else
+  {
+    cout <<"\nPlayer Two - Enter the column you want to place your disk in:\n";
+    cin >> c;
+  }
+
+  while (0 >= c || c> 6)
+  {
+    cout << "This column does not exist. Please enter a value from numbers 1-6.\n";
+    cin >> c;
+  }
+  return c;
+}
+//This function initializes the board
+void initializeBoard(char b[6][6], char s, char o, char x, char a[6], int n[6] , int c)
+{
+  for (int i = 0; i<6; i++)
+  {
+    for (int j = 0; j<6; j++)
+    {
+      b[i][j] = s;
+    }
+  }
+  b[2][2] = o;
+  b[3][2] = x;
+  b[2][3] = x;
+  b[3][3] = o;
+
+  //The code below sets the values for row, column and the initial spots of x's and o's
+  for (int i = 0; i<6; i++)
+  {
+    n[i] = c;
+    c++;
+  }
+
+  c = 65;
+
+  for (int i = 0; i<6; i++)
+  {
+    a[i] = c;
+    c++;
+  }
+  return;
+}
+
+//This function displays the playing board
+void dispBoard(char b[6][6], char a[6], int n[6])
+{
+  for (int i = 0; i < 6; i++) 
+  { 
+    cout << "-------------\n"; 
+
+    for (int j = 0; j < 6; j++) 
+    { 
+      cout << "|" << b[i][j];
+    } 
+
+    cout << "|"<< a[i] <<"\n"; 
+  }
+
+  cout << "-------------\n";
+
+  for (int i = 0; i<6; i++)
+  {
+    cout << " " << n[i];
+  }
+
+}
+//This function checks to see if there are any empty spaces left on the board
+bool boardEmpty(char b[6][6], char s)
+{
+  int counter = 0;
+  for (int i = 0; i<6; i++)
+  {
+    for (int j = 0; j<6; j++)
+    {
+      if (b[i][j] == s)
+      {
+        counter++;
+      }
+    }
+  }
+
+  if (counter > 0)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+//Checks to see who won
+void whoWon (char b[6][6], char x, int po, char o, int pt)
+{
+  for(int i = 0;i<6;i++)
+  {
+    for (int j = 0; j<6; j++)
+    {
+      if(b[i][j]==x)
+      {
+        po++;
+      }
+      else if (b[i][j]==o)
+      {
+        pt++;
+      }
+    }
+  }
+  if (po>pt)
+  {
+    cout << "\nPlayer 1 is the winner!!";
+  }
+  else if (po < pt)
+  {
+    cout << "\nPlayer 2 is the winner!!";
+  }
+  else
+  {
+    cout << "\nThis game ended in a tie!";
+  }
+  cout << "\nPlayer 1 score:" << po<< endl;
+  cout<< "Player 2 score:" << pt << endl;
+}
+//This code checks to see if the cell is occupied. If so, it asks the user to reenter values for row and column using the concept of tuples.
+tuple<char, int> isOccupied(char b[6][6], char x, char o, char r, int c, bool po)
+{
+  while (b[int(r)-65][c-1] == x || b[int(r)-65][c-1]==o)
+    {
+      cout << "Error - that cell is already occupied. Try again!"<<endl;
+      r = getRow(po);
+      c = getColumn(po);
+    }
+  return  make_tuple(r, c);
+}
+
+bool nearOpp(char b[6][6], bool po, char r, int c, char x, char o)
+{
+  int nearOpp=0;
+  for (int i = -1; i<2;i++)
+  {
+    for (int j = -1;j<2;j++)
+    {
+      {
+        //This code runs when it is player 1's turn*/
+        if(po)
+        {
+          if(b[int(r)-65+i][c-1+j]==o)
+          {
+            nearOpp++;
+          }
+        }
+        //this code runs when it is player 2's turn
+        else
+        {
+          if(b[int(r)-65+i][c-1+j]==x)
+          {
+            nearOpp++;
+          }
+        }
+      }
+    }
+  }
+  cout << "You are near " << nearOpp <<" opponents.\n";
+  if (nearOpp>0)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+tuple<char, char> whoseTurn(char x, char o, bool po)
+{
+  if (po) //if it's player 1's turn
+  {
+    return  make_tuple(x, o);
+  }
+  else //If it is player 2's turn
+  {
+    return make_tuple(o, x);
+  }
+}
+
+int checkAboveRight(char b[6][6], bool po, char x, char o, int r, int col, char s)
+{
+  char opp, mycounter;
+  bool willFlip = false;
+  tie (mycounter, opp) = whoseTurn(x, o, po);
+  int i = 1;
+  if(b[r-i][col+i]==opp)
+  {
+    i++;
+    while (!willFlip)
+    {
+      if(b[r-i][col+i]==opp)
+      {
+        i++;
+      }
+      else if(b[r-i][col+i]==s)
+      {
+        willFlip = true;
+        return 0;
+      }
+      else
+      {
+        willFlip = true;
+        return 1;
+      }
+    }
+  }
+  else 
+  {
+    return 0;
+  }
+}
+int checkUp(char b[6][6], bool po, char x, char o, int r, int col, char s)
+{
+  char opp, mycounter;
+  bool willFlip = false;
+  tie (mycounter, opp) = whoseTurn(x, o, po);
+  int i = 1;
+  if(b[r-i][col]==opp)
+  {
+    i++;
+    while (!willFlip)
+    {
+      if(b[r-i][col]==opp)
+      {
+        i++;
+      }
+      else if(b[r-i][col]==s)
+      {
+        willFlip = true;
+        return 0;
+      }
+      else
+      {
+        willFlip = true;
+        return 1;
+      }
+    }
+  }
+  else 
+  {
+    return 0;
+  }
+}
+int checkAboveLeft(char b[6][6], bool po, char x, char o, int r, int col, char s)
+{
+  char opp, mycounter;
+  bool willFlip = false;
+  tie (mycounter, opp) = whoseTurn(x, o, po);
+  int i = 1;
+  if(b[r-i][col-i]==opp)
+  {
+    i++;
+    while (!willFlip)
+    {
+      if(b[r-i][col-i]==opp)
+      {
+        i++;
+      }
+      else if(b[r-i][col-i]==s)
+      {
+        willFlip = true;
+        return 0;
+      }
+      else
+      {
+        willFlip = true;
+        return 1;
+      }
+    }
+  }
+  else 
+  {
+    return 0;
+  }
+}
+int checkRight(char b[6][6], bool po, char x, char o, int r, int col, char s)
+{
+  char opp, mycounter;
+  bool willFlip = false;
+  tie (mycounter, opp) = whoseTurn(x, o, po);
+  int i = 1;
+  if(b[r][col-i]==opp)
+  {
+    i++;
+    while (!willFlip)
+    {
+      if(b[r][col-i]==opp)
+      {
+        i++;
+      }
+      else if(b[r][col-i]==s)
+      {
+        willFlip = true;
+        return 0;
+      }
+      else
+      {
+        willFlip = true;
+        return 1;
+      }
+    }
+  }
+  else 
+  {
+    return 0;
+  }
+}
+int checkLeft(char b[6][6], bool po, char x, char o, int r, int col, char s)
+{
+  char opp, mycounter;
+  bool willFlip = false;
+  tie (mycounter, opp) = whoseTurn(x, o, po);
+  int i = 1;
+  if(b[r][col+i]==opp)
+  {
+    i++;
+    while (!willFlip)
+    {
+      if(b[r][col+i]==opp)
+      {
+        i++;
+      }
+      else if(b[r][col+i]==s)
+      {
+        willFlip = true;
+        return 0;
+      }
+      else
+      {
+        willFlip = true;
+        return 1;
+      }
+    }
+  }
+  else 
+  {
+    return 0;
+  }
+}
+int checkBelowLeft(char b[6][6], bool po, char x, char o, int r, int col, char s)
+{
+  char opp, mycounter;
+  bool willFlip = false;
+  tie (mycounter, opp) = whoseTurn(x, o, po);
+  int i = 1;
+  if(b[r+i][col-i]==opp)
+  {
+    i++;
+    while (!willFlip)
+    {
+      if(b[r+i][col-i]==opp)
+      {
+        i++;
+      }
+      else if(b[r+i][col-i]==s)
+      {
+        willFlip = true;
+        return 0;
+      }
+      else
+      {
+        willFlip = true;
+        return 1;
+      }
+    }
+  }
+  else 
+  {
+    return 0;
+  }
+}
+int checkDown(char b[6][6], bool po, char x, char o, int r, int col, char s)
+{
+  char opp, mycounter;
+  bool willFlip = false;
+  tie (mycounter, opp) = whoseTurn(x, o, po);
+  int i = 1;
+  if(b[r+i][col]==opp)
+  {
+    i++;
+    while (!willFlip)
+    {
+      if(b[r+i][col]==opp)
+      {
+        i++;
+      }
+      else if(b[r+i][col]==s)
+      {
+        willFlip = true;
+        return 0;
+      }
+      else
+      {
+        willFlip = true;
+        return 1;
+      }
+    }
+  }
+  else 
+  {
+    return 0;
+  }
+}
+int checkBelowRight(char b[6][6], bool po, char x, char o, int r, int col, char s)
+{
+  char opp, mycounter;
+  bool willFlip = false;
+  tie (mycounter, opp) = whoseTurn(x, o, po);
+  int i = 1;
+  if(b[r+i][col+i]==opp)
+  {
+    i++;
+    while (!willFlip)
+    {
+      if(b[r+i][col+i]==opp)
+      {
+        i++;
+      }
+      else if(b[r+i][col+i]==s)
+      {
+        willFlip = true;
+        return 0;
+      }
+      else
+      {
+        willFlip = true;
+        return 1;
+      }
+    }
+  }
+  else 
+  {
+    return 0;
+  }
+  
+}
+
+int willFlip(bool po, char b[6][6], char x, char o, char s)
+{
+  char opp, mycounter;
+  int y=0, counter=0;
+  tie (mycounter, opp) = whoseTurn(x, o, po);
+  for (int i = 0;i<6; i++)
+  {
+    for (int j = 0; j<6;j++)
+    {
+      y = y + checkAboveLeft(b, po, x,  o, i, j, s)+checkUp(b, po, x,  o, i, j, s)+checkAboveRight(b, po, x,  o, i, j, s)+checkLeft(b, po, x,  o, i, j, s)+checkRight(b, po, x,  o, i, j, s)+checkBelowLeft(b, po, x,  o, i, j, s)+checkDown(b, po, x,  o, i, j, s)+checkBelowRight(b, po, x,  o, i, j, s);
+    }
+  }
+  cout << "There are "<< y<< " places where you can make a move.";
+  return y;
+}
+
+//This function checks to see if a move will flip an opponent's disk and then flips it
+void flip (char b[6][6], char r, int c, bool po, char x, char o, char s)
+{
+  bool willFlip = false;
+  char opp, mycounter;
+  tie (mycounter, opp) = whoseTurn(x, o, po);//set out whose turn it is.
+  for (int i = -1; i<2;i++)
+  {
+    for (int j = -1;j<2;j++)
+    {
+        if(b[int(r)-65+i][c-1+j]==opp)//this loop runs if there is an opponent's cell next to desired move
+        {
+          //There are 8 cases to consider here: diagonal left up, up, diagonal right up, left, right, diagonal left down, down, diagonal right down
+          //case 1 - diagonal left up --> when j=-1 and i = -1
+          if (i ==-1 && j == -1)
+          {
+            cout <<"There are opponents diagonally above you to the left.\n";
+			      while (!willFlip) //this loop runs while willflip is false, unless it hits a space
+            {
+			        i--;
+              j--;
+              if (b[int(r)-65+i][c-1+j] == mycounter)
+              {
+                willFlip = true;
+                cout << "This opponent can be flipped.";
+                i++;
+                j++;
+                while(b[int(r)-65+i][c-1+j]==opp)
+                {
+                  b[int(r)-65+i][c-1+j] = mycounter;
+                  i++;
+                  j++;
+                }
+              }
+              else if (b[int(r)-65+i][c-1+j]==s)
+              {
+                cout << "the opponent diagonally above you can't be flipped.";
+                r = getRow(po);
+                c = getColumn(po);
+				        willFlip = true;
+                flip(b, r, c, po, x, o, s);
+              }
+            }
+            willFlip = false;
+			i = -1;
+			j = -1;
+          }
+          //case 2 - up - i=-1 and j =0
+          else if (i==-1 && j==0)
+          {
+            cout <<"There are opponents above you.\n";
+            while (!willFlip) //this loop runs while willflip is false, unless it hits a space
+            {
+              i--;
+              if (b[int(r)-65+i][c-1+j] == mycounter)
+              {
+                willFlip = true;
+                cout << "This opponent can be flipped.";
+                i++;
+                while(b[int(r)-65+i][c-1+j]==opp)
+                {
+                  b[int(r)-65+i][c-1+j] = mycounter;
+                  i++;
+                }
+              }
+              else if (b[int(r)-65+i][c-1+j]==s)
+              {
+                cout << "the opponent above you can't be flipped.";
+                r = getRow(po);
+                c = getColumn(po);
+				  willFlip = true;
+          flip(b, r, c, po, x, o, s);
+              }
+            }
+            willFlip = false;
+			i = -1;
+			j = 0;
+          }
+          else if (i==-1 && j ==1)
+          {
+            cout <<"There are opponents diagonally above you to the right.\n";
+            while (!willFlip) //this loop runs while willflip is false, unless it hits a space
+            {
+              i--;
+              j++;
+              if (b[int(r)-65+i][c-1+j] == mycounter)
+              {
+                willFlip = true;
+                cout << "This opponent can be flipped.";
+                i++;
+                j--;
+                while(b[int(r)-65+i][c-1+j]==opp)
+                {
+                  b[int(r)-65+i][c-1+j] = mycounter;
+                  i++;
+                  j--;
+                }
+              }
+              else if (b[int(r)-65+i][c-1+j]==s)
+              {
+                cout << "the opponent above you can't be flipped.";
+                r = getRow(po);
+                c = getColumn(po);
+				willFlip = true;
+                flip(b, r, c, po, x, o, s);
+              }
+            }
+            willFlip = false;
+			i = -1;
+			j = 1;
+          }
+          else if (i==0 && j ==-1)
+          {
+            cout <<"There are opponents to your left.\n";
+            while (!willFlip) //this loop runs while willflip is false, unless it hits a space
+            {
+              j--;
+              if (b[int(r)-65+i][c-1+j] == mycounter)
+              {
+                willFlip = true;
+                cout << "This opponent can be flipped.";
+                j++;
+                while(b[int(r)-65+i][c-1+j]==opp)
+                {
+                  b[int(r)-65+i][c-1+j] = mycounter;
+                  j++;
+                }
+              }
+              else if (b[int(r)-65+i][c-1+j]==s)
+              {
+                cout << "the opponent above you can't be flipped.";
+                r = getRow(po);
+                c = getColumn(po);
+				willFlip = true;
+                flip(b, r, c, po, x, o, s);
+              }
+            }
+            willFlip = false;
+			i = 0;
+			j = -1;
+          }
+          else if (i==0 && j == 1)
+          {
+            cout <<"There are opponents to your right.\n";
+            while (!willFlip) //this loop runs while willflip is false, unless it hits a space
+            {
+              j++;
+              if (b[int(r)-65+i][c-1+j] == mycounter)
+              {
+                willFlip = true;
+                cout << "This opponent can be flipped.";
+                j--;
+                while(b[int(r)-65+i][c-1+j]==opp)
+                {
+                  b[int(r)-65+i][c-1+j] = mycounter;
+                  j--;
+                }
+              }
+              else if (b[int(r)-65+i][c-1+j]==s)
+              {
+                cout << "the opponent above you can't be flipped.";
+                r = getRow(po);
+                c = getColumn(po);
+				willFlip = true;
+                flip(b, r, c, po, x, o, s);
+              }
+            }
+            willFlip = false;
+			i = 0;
+			j = 1;
+          }
+          else if (i==1 && j ==-1)
+          {
+            cout <<"There are opponents diagonally below you to the left.\n";
+            while (!willFlip) //this loop runs while willflip is false, unless it hits a space
+            {
+              i++;
+              j--;
+              if (b[int(r)-65+i][c-1+j] == mycounter)
+              {
+                willFlip = true;
+                cout << "This opponent can be flipped.";
+                i--;
+                j++;
+                while(b[int(r)-65+i][c-1+j]==opp)
+                {
+                  b[int(r)-65+i][c-1+j] = mycounter;
+                  i--;
+                  j++;
+                }
+              }
+              else if (b[int(r)-65+i][c-1+j]==s)
+              {
+                cout << "the opponent above you can't be flipped.";
+                r = getRow(po);
+                c = getColumn(po);
+				willFlip = true;
+                flip(b, r, c, po, x, o, s);
+              }
+            }
+            willFlip = false;
+			i = 1;
+			j = -1;
+          }
+          else if (i==1 && j ==0)
+          {
+            cout <<"There are opponents below you.\n";
+            while (!willFlip) //this loop runs while willflip is false, unless it hits a space
+            {
+              i++;
+              if (b[int(r)-65+i][c-1+j] == mycounter)
+              {
+                willFlip = true;
+                cout << "This opponent can be flipped.";
+                i--;
+                while(b[int(r)-65+i][c-1+j]==opp)
+                {
+                  b[int(r)-65+i][c-1+j] = mycounter;
+                  i--;
+                }
+              }
+              else if (b[int(r)-65+i][c-1+j]==s)
+              {
+                cout << "the opponent above you can't be flipped.";
+                r = getRow(po);
+                c = getColumn(po);
+				willFlip = true;
+                flip(b, r, c, po, x, o, s);
+              }
+            }
+			willFlip = false;
+            i = 1;
+			j = 0;
+          }
+          else if (i ==1 && j==1)
+          {
+            cout << "There are opponents diagonally to your right below.";
+            while (!willFlip) //this loop runs while willflip is false, unless it hits a space
+            {
+              i++;
+              j++;
+              if (b[int(r)-65+i][c-1+j] == mycounter)
+              {
+                willFlip = true;
+                cout << "This opponent can be flipped.";
+                i--;
+                j--;
+                while(b[int(r)-65+i][c-1+j]==opp)
+                {
+                  b[int(r)-65+i][c-1+j] = mycounter;
+                  i--;
+                  j--;
+                }
+              }
+              else if (b[int(r)-65+i][c-1+j]==s)
+              {
+                cout << "the opponent above you can't be flipped.";
+                r = getRow(po);
+                c = getColumn(po);
+				willFlip = true;
+                flip(b, r, c, po, x, o, s);
+              }
+            }
+            willFlip = false;
+			i = 1;
+			j = 1;
+          }
+        }
+    }
+  }
+}
+
+int main() 
+{
+  //Variable initialization
+  char board[6][6], x = 'x', o = 'o', space = ' ', alphcounter[6], row;
+  int numcounter[6], column, counter = 1, playOne =0, playTwo =0;
+  bool isEmpty = false, player1 = true, nextToOpponent;
+  
+  //This function initializes the board
+  initializeBoard(board, space, o, x, alphcounter, numcounter, counter);
+
+  //The function displays the board
+  dispBoard(board, alphcounter, numcounter);
+  
+  //This bit of code checks for if the board is empty or not.
+  isEmpty = boardEmpty(board, space);
+  cout <<endl;
+
+  while (willFlip(player1, board, x, o, space))
+  {
+    //This next bit of code asks Player to make their move and checks to see if the move is valid. If the move isn't valid, the user is asked to try again
+    row = getRow(player1);
+    column = getColumn(player1);
+    
+    //This code checks to see if the board cell is occupied. if so - the person is asked to reenter their values.
+    tie (row, column) = isOccupied(board, x, o, row, column, player1);
+
+    //checks to see if the desired cell is next to an opponent's cell
+    
+    nextToOpponent = nearOpp(board, player1, row, column, x, o);
+    
+
+    while (!nextToOpponent)
+    {
+      cout <<"You are not next to the Opponent. Please try again.";
+      row = getRow(player1);
+      column = getColumn(player1);
+      nextToOpponent = nearOpp(board, player1, row, column, x, o);
+    }
+    //This next bit of code checks to see if the move is valid as per the rules of the game. It checks the cells surrounding the desired move to see if the move will result in the opponent's disk being flipped. If not, the person is asked to try again.
+
+    flip(board, row, column, player1, x, o, space);  
+    //switches between the players
+    if (player1 == true)
+    {
+      board[int(row)-65][column-1] = x;
+    }
+    else 
+    {
+      board[int(row)-65][column-1] = o;
+    }
+
+    dispBoard(board, alphcounter, numcounter);
+
+    //This bit of code checks for if the board is empty or not.
+    isEmpty = boardEmpty(board, space);
+    player1 = !player1;
+  }
+
+  //This code checks to see who won and displays it on the screen
+  whoWon(board, x, playOne, o, playTwo);
+  return 0;
+}
